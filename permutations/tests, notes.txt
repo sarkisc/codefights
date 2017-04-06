@@ -1,0 +1,28 @@
+abc             depth = 0
+abc   bac   cba    depth = 1
+abc acb     bac bca    cba cab   depth = 2
+abc acb     bac bca    cba cab   depth = 3
+
+tests:
+
+Input:
+inputArray: ["aba", "bbb", "bab"]
+Expected Output: false
+
+Input:
+inputArray: ["ab", "bb", "aa"]
+Expected Output: true
+
+Input:
+inputArray: ["q", "q"]
+Expected Output: false
+
+Input:
+inputArray: ["zzzzab", "zzzzbb", "zzzzaa"]
+Expected Output:
+true
+
+Input:
+inputArray: ["f", "g", "a", "h"]
+Expected Output:
+true
