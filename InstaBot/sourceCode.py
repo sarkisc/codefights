@@ -67,5 +67,7 @@ def isAdmissibleOverpayment(prices, notes, x):
     
         i += 1
     
-    #return amountOverInStore
-    return x >= int(amountOverInStore)
+    
+    if abs(x - amountOverInStore) < 0.0000001 or x >= amountOverInStore:
+        return True
+    return False
