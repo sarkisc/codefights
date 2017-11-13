@@ -1,33 +1,4 @@
-def areFollowingPatterns(strings, patterns):
 
-    # keep k/v pairs in a dictionary
-    # 
-    # go through strings, patterns simultaneously and check:
-        # if string[i] not in dict
-            # add string[i] and pattern[i] to dict as a k/v pair
-        # if string[i] in dict and pattern[i] does not match
-            # return False
-    # return True
-    
-    myMap = {}
-    myOtherMap = {}
-    
-    x = len(strings)
-    
-    for i in range(0,x):
-        if strings[i] not in myMap:
-            myMap[strings[i]] = patterns[i]
-        else:
-            if myMap[strings[i]] != patterns[i]:
-                return False
-            
-        if patterns[i] not in myOtherMap:
-            myOtherMap[patterns[i]] = strings[i]
-        else:
-            if myOtherMap[patterns[i]] != strings[i]:
-                return False            
-        
-    return True
 
 
 #Note: Write a solution with O(n2) time complexity, 
@@ -243,8 +214,83 @@ def productExceptSelf(nums, m):
     return ( sum([(mult//nums[i])%m for i in range(0,len(nums))]) )%m
 
 
+#ARRAYS
+#
+
+#Given a string s, find and return the first instance of a non-repeating character in it. If there is no such character, return '_'.
+
+def firstNotRepeatingCharacter(s):
+    
+    nonRepeating = []
+    repeating = []
+    i = 0
+    x = len(s)
+    while i < x:
+        if s[i] in nonRepeating:
+            nonRepeating.remove(s[i])
+            repeating.append(s[i])
+            i += 1
+        elif s[i] in repeating:
+            i += 1
+        else:
+            nonRepeating.append(s[i])
+            i += 1
+    
+    if nonRepeating == []:
+        return "_"
+    else:
+        return nonRepeating[0]
+
+
+#You are given an n x n 2D matrix that represents an image. Rotate the image by 90 degrees (clockwise).
+
+def rotateImage(a):
+    
+    # given an index, returns column entries (at that index) in a list
+    def column(i):
+        lst = []
+        x = len(a)-1
+        while x > -1:
+            lst.append(a[x][i])
+        
+            x -= 1
+        
+        return lst
+        
+    return [ column(i) for i in range(0,len(a)) ]
+
 #HASH TABLES
 #
+
+#You have a list of dishes. Each dish is associated with a list of ingredients used to prepare it. You want to group the dishes by ingredients, 
+#so that for each ingredient you'll be able to find all the dishes that contain it (if there are at least 2 such dishes).
+#Return an array where each element is a list with the first element equal to the name of the ingredient and all of the other elements equal to the names of dishes that contain this ingredient. 
+#The dishes inside each list should be sorted lexicographically. The result array should be sorted lexicographically by the names of the ingredients in its elements.
+
+def groupingDishes(dishes):
+    
+    ingredients = {} # ingredient (string) --> list of dishes (list)
+    ingredientCount = {} # ingredient (string) --> count (int)
+    
+    for dish in dishes:
+        for i in range(1, len(dish)):
+            if dish[i] not in ingredients.keys():    
+                ingredients[dish[i]] = [dish[0]]
+            else:
+                ingredients[dish[i]] += [dish[0]]
+            if dish[i] not in ingredientCount.keys():    
+                ingredientCount[dish[i]] = 1
+            else:
+                ingredientCount[dish[i]] += 1
+                
+    ans = sorted([[ingr] for ingr in ingredients.keys() if ingredientCount[ingr] > 1])
+    
+    for i in range(len(ans)):
+        ans[i] += sorted(ingredients[ans[i][0]])
+
+    return ans
+
+
 #Given an array strings, determine whether it follows the sequence given in the patterns array. 
 #In other words, there should be no i and j for which 
 #strings[i] = strings[j] and patterns[i] ≠ patterns[j] or for which strings[i] ≠ strings[j] and patterns[i] = patterns[j].
@@ -269,6 +315,23 @@ def areFollowingPatterns(strings, patterns):
             match2[curString2] = curString1
             
     return True
+
+
+#Given an array of integers nums and an integer k, determine whether there are two distinct indices i and j in the array where nums[i] = nums[j] and the absolute difference between i and j is less than or equal to k.
+
+def containsCloseNums(nums, k):
+    
+    numMap = {} # num (int) --> list of indices (list)
+    
+    for i in range(len(nums)):
+        if nums[i] not in numMap.keys():
+            numMap[nums[i]] = [i]
+        else:
+            for num in numMap[nums[i]]:
+                if i - num <= k:
+                    return True
+            numMap[nums[i]] += [i]
+    return False
 
 
 # LINKED LISTS
@@ -430,7 +493,101 @@ def copyLinkedList(lnkLst):
     return lnkLstCpy
 
 
-#TREES
+#Given a linked list l, reverse its nodes k at a time and return the modified list. 
+#k is a positive integer that is less than or equal to the length of l. 
+#If the number of nodes in the linked list is not a multiple of k, then the nodes that are left out at the end should remain as-is.
+
+
+def reverseNodesInKGroups(l, k):
+    
+    Groups = [] # list of pointers to linked list groups
+    reverseFinalGroup = False
+    nodeCount = 0
+    curNode = l
+    
+    while curNode is not None:
+        if nodeCount % k == 0:
+            Groups.append(curNode)
+        tempNode = curNode
+        curNode = curNode.next
+        if (nodeCount+1) % k == 0:
+            tempNode.next = None
+        nodeCount += 1
+    if nodeCount % k == 0:
+        reverseFinalGroup = True
+        
+    # now reverse each group
+    for i in range(len(Groups)-1):
+        Groups[i] = reverseLinkedList(Groups[i])
+    if reverseFinalGroup:
+        Groups[-1] = reverseLinkedList(Groups[-1])
+    for i in range(len(Groups)-1):
+        getLastNode(Groups[i]).next = Groups[i+1]
+    l = Groups[0]
+    return l
+        
+
+# reverses a linked list, returns it
+def reverseLinkedList(l):
+    links = []
+    curNode = l
+    while curNode is not None:
+        tempNode = curNode
+        curNode = curNode.next
+        tempNode.next = None
+        links = [tempNode] + links
+    for i in range(len(links)):
+        if i+1 in range(len(links)):
+            links[i].next = links[i+1]
+    l = links[0]
+    return l
+
+# returns the final link in a linked list
+def getLastNode(l):
+    curNode = l
+    while curNode.next is not None:
+        curNode = curNode.next
+    return curNode
+
+
+#Given a singly linked list of integers l and a non-negative integer n, move the last n list nodes to the beginning of the linked list.
+#Try to solve this task in O(list size) time using O(1) additional space.
+
+def rearrangeLastN(l, n):
+    # keep two pointers pointing at nodes in linked lists
+    # pointer further along in linked list is n ahead of first pointer
+    # 
+    # say l = [1, 2, 3, 4, 5] and n = 3
+    # 
+    # we reach a point where...
+    # we have trailer pointing at node with value 2 (call this node s)
+    # we have leader pointing at node with value 5 (call this node t)
+    # 
+    # save value for s.next (call this v; this will be the new start node)
+    # s.next = null
+    # t.next = l
+    # return v
+    
+    if l is None or n == 0:
+        return l
+    
+    trailer = leader = l
+    for i in range(n):
+        leader = leader.next
+        if leader == None:
+            return l
+    
+    while leader.next is not None:
+        trailer = trailer.next
+        leader = leader.next
+    
+    ans = trailer.next
+    trailer.next = None
+    leader.next = l
+    return ans
+
+
+#TREES (BASIC)
 #
 # Definition for binary tree:
 # class Tree(object):
@@ -497,6 +654,105 @@ def isTreeSymmetric(t):
         curLevel += 1
         
     return True
+
+
+#Consider a special family of Engineers and Doctors. This family has the following rules:
+
+#Everybody has two children.
+#The first child of an Engineer is an Engineer and the second child is a Doctor.
+#The first child of a Doctor is a Doctor and the second child is an Engineer.
+#All generations of Doctors and Engineers start with an Engineer.
+
+#Given the level and position of a person in the ancestor tree above, find the profession of the person.
+#Note: in this tree first child is considered as left child, second - as right.
+
+def findProfession(level, pos):
+    
+    # level-1 tells you how many bits to keep
+    # pos-1 tells you what the bits are
+    
+    strPos = str(bin(pos-1)[2:])
+    while len(strPos) < (level-1):
+        strPos = '0' + strPos
+        
+    curProf = 'Engineer'
+    for bit in strPos:
+        if curProf == 'Engineer' and bit == '1':
+            curProf = 'Doctor'
+        elif curProf == 'Doctor' and bit == '1':
+            curProf = 'Engineer'
+    
+    return curProf
+
+
+#A tree is considered a binary search tree (BST) if for each of its nodes the following is true:
+
+#The left subtree of a node contains only nodes with keys less than the node's key.
+#The right subtree of a node contains only nodes with keys greater than the node's key.
+#Both the left and the right subtrees must also be binary search trees.
+
+#Given a binary search tree t, find the kth smallest element in it.
+#Note that kth smallest element means kth element in increasing order.
+
+def kthSmallestInBST(t, k):
+    # inorder traversal
+    # helper would help...
+    return inorder(t, [k, t.value])[1]
+
+    
+# takes in t, [k, v], returns [k, v]
+def inorder(t, kv):
+    
+    if kv[0] == 0:
+        return kv
+    if (t.left == None) and (t.right == None):
+        return [kv[0]-1, t.value]
+    
+    # check left 
+    leftSearch = None   
+    if t.left is not None:
+        leftSearch = inorder(t.left, [kv[0], t.value])
+        if leftSearch[0] == 0:
+            return leftSearch
+    
+    # check yourself
+    meSearch = None
+    if leftSearch is not None:
+        meSearch = [leftSearch[0]-1, t.value]
+    else:
+        meSearch = [kv[0]-1, t.value]
+    if (meSearch[0] == 0) or (t.right is None):
+        return meSearch
+    
+    # check right
+    return inorder(t.right, meSearch)
+
+
+#Given two binary trees t1 and t2, determine whether the second tree is a subtree of the first tree. 
+#A subtree for vertex v in a binary tree t is a tree consisting of v and all its descendants in t. 
+#Determine whether or not there is a vertex v (possibly none) in tree t1 such that a subtree for vertex v (possibly empty) in t1 equals t2.
+
+def isSubtree(t1, t2):
+    
+    if t1 is None:
+        if t2 is None:
+            return True
+        return False
+
+    if equalTrees(t1, t2):
+        return True
+    else:
+        return isSubtree(t1.left, t2) or isSubtree(t1.right, t2)
+    
+# returns True if t1 and t2 are the same tree
+# returns False otherwise
+def equalTrees(t1, t2):
+    if t1 is None and t2 is None:
+        return True
+    if t1 is not None and t2 is not None:
+        if t1.value == t2.value:
+            return (equalTrees(t1.left, t2.left) and equalTrees(t1.right, t2.right))
+    return False
             
 
 #HEAPS, STACKS, QUEUES
@@ -658,6 +914,167 @@ def minimumOnStack(operations):
             
             
     return answer
+
+
+#Given a 2D grid skyMap composed of '1's (clouds) and '0's (clear sky), count the number of clouds. 
+#A cloud is surrounded by clear sky, and is formed by connecting adjacent clouds horizontally or vertically. 
+#You can assume that all four edges of the skyMap are surrounded by clear sky.
+
+def countClouds(skyMap):
+    
+    if skyMap == []:
+        return 0
+    
+    count = 0
+    
+    visited = []
+    for i in range(len(skyMap)):
+        v = [[False]*len(skyMap[0])]
+        visited += v
+    
+    for i in range(len(skyMap)):
+        for j in range(len(skyMap[0])):
+            if visited[i][j] == False and skyMap[i][j] == '1':
+                DFS(i, j, visited, skyMap)
+                count += 1
+    return count
+                
+
+def DFS(i, j, visited, skyMap):
+    
+    visited[i][j] = True
+    # left
+    if (j-1) in range(len(visited[0])) and visited[i][j-1] == False and skyMap[i][j-1] == '1':
+        DFS(i, j-1, visited, skyMap)
+    # right
+    if (j+1) in range(len(visited[0])) and visited[i][j+1] == False and skyMap[i][j+1] == '1':
+        DFS(i, j+1, visited, skyMap)
+    # down
+    if (i+1) in range(len(visited)) and visited[i+1][j] == False and skyMap[i+1][j] == '1':
+        DFS(i+1, j, visited, skyMap)
+    # up
+    if (i-1) in range(len(visited)) and visited[i-1][j] == False and skyMap[i-1][j] == '1':
+        DFS(i-1, j, visited, skyMap)
+
+
+#TREES (ADVANCED)
+#
+
+#A tree height can be calculated as the length of the longest path in it (it is also called tree diameter).
+#Find the tree diameter.
+
+def treeDiameter(n, tree):
+    
+    # get the max depth of the tree from the root (it could be any node, really)
+    # then take a node at max depth from the root and find the max depth from that node
+    # return the latter
+    
+    if tree == []:
+        return 0
+    
+    adjacentNodes = {} # node (int) -> list of adjacent nodes (list)
+    for item in tree:
+        n1, n2 = item[0], item[1]
+        if n1 in adjacentNodes:
+            adjacentNodes[n1].append(n2)
+        else:
+            adjacentNodes[n1] = [n2]
+        if n2 in adjacentNodes:
+            adjacentNodes[n2].append(n1)
+        else:
+            adjacentNodes[n2] = [n1]
+    
+    startNode = tree[0][0]
+    lst1 = BFS(startNode, adjacentNodes, 0, n)
+    
+    return BFS(lst1[0], adjacentNodes, 0, n)[1]
+
+    
+# returns a list of two elements: [someNodeAtMaxDepth, maxDepth]
+def BFS(startNode, adjacentNodes, depth, n):
+    
+    visited = set()
+    visited.add(startNode)
+    queue = [[startNode, depth]]
+    
+    while len(visited) < n:
+        item = queue.pop(0)
+        for node in adjacentNodes[item[0]]:
+            if node not in visited:
+                queue.append([node,item[1]+1])
+                visited.add(node)
+    
+    return max(queue, key=lambda item: item[1])
+
+
+#The sum of a subtree is the sum of all the node values in that subtree, including its root.
+#Given a binary tree of integers, find the most frequent sum (or sums) of its subtrees.
+
+def mostFrequentSum(t):
+    
+    if t is None:
+        return []
+
+    sumMap = {} # sum (int) -> numOccurrences (int)
+    getSum(t, sumMap)
+    
+    maxOccurrences = max(sumMap.values())
+    return sorted([key for key in sumMap.keys() if (sumMap[key] == maxOccurrences)])
+    
+    
+def getSum(t, sumMap):
+    
+    leftSum = rightSum = 0
+    
+    if t.left is not None:
+        leftSum = getSum(t.left, sumMap)
+             
+    if t.right is not None:
+        rightSum = getSum(t.right, sumMap)
+        
+    val = t.value + leftSum + rightSum
+    
+    if val in sumMap:
+        sumMap[val] += 1
+    else:
+        sumMap[val] = 1
+        
+    return val
+
+
+#GRAPHS
+#
+
+#We will represent the nodes by integers 0, ...., n - 1. We represent the adjacent edges using a two-dimensional list, connections. 
+#If j is in the list connections[i], then there is a directed edge from node i to node j.
+
+#Write a function that returns True if connections describes a graph with a directed cycle, or False otherwise.
+
+def hasDeadlock(connections):
+    # run search alg, keeping track of which nodes have been visited...
+    # if you come across start node again, you're done
+
+    visited = set()
+    for i in range(len(connections)):
+        visited.add(i)
+        nodeSearch = DFCS(connections, i, visited)
+        if nodeSearch:
+            return True
+        visited = set()
+    return False
+    
+# returns True if cycle found; False otherwise
+def DFCS(connections, startNode, vSet):
+    for node in connections[startNode]:
+        if node in vSet:
+            return True
+        else:
+            vSet.add(node)
+            nodeSearch = DFCS(connections, node, vSet)
+            if nodeSearch:
+                return True
+            vSet.remove(node)
+    return False
         
 
 #DFS AND BFS
@@ -767,7 +1184,7 @@ def traverse(node, nums, valueSoFar=0):
 
 
 
-#DP: BASIC
+#DP (BASIC)
 #
 #DO MORE OF THESE!!!
 
@@ -804,6 +1221,91 @@ def climbingStairs(n):
     
     return count
 
+
+#You are planning to rob houses on a specific street, and you know that every house on the street has a certain amount of money hidden. 
+#The only thing stopping you from robbing all of them in one night is that adjacent houses on the street have a connected security system. 
+#The system will automatically trigger an alarm if two adjacent houses are broken into on the same night.
+#Given a list of non-negative integers nums representing the amount of money hidden in each house, determine the maximum amount of money you can rob in one night without triggering an alarm.
+
+def houseRobber(nums):
+    # take the max of everything other than the last one
+    # then add that to the current
+    
+    if nums == []:
+        return 0
+    
+    l = [0]*len(nums)
+    l[0] = mxAmt = nums[0]
+    for i in range(1, len(nums)):
+        maxAmount = nums[i]
+        for j in range(0, i-1):
+            curAmount = l[j] + nums[i]
+            if curAmount > maxAmount:
+                maxAmount = curAmount
+        l[i] = maxAmount
+        if maxAmount > mxAmt:
+            mxAmt = maxAmount
+
+    return mxAmt
+
+
+#Given a sorted integer array that does not contain any duplicates, return a summary of the number ranges it contains.
+
+def composeRanges(nums):
+    
+    ranges = []
+    
+    i = 0
+    while i < len(nums):
+        startNum = endNum = nums[i]
+        while (i+1) < len(nums) and nums[i+1] == nums[i] + 1:
+            endNum += 1
+            i += 1
+        
+        ranges.append(getRange(startNum, endNum))
+        
+        i += 1
+        
+    return ranges
+        
+
+        
+def getRange(startNum, endNum):
+    if startNum == endNum:
+        return str(startNum)
+    else:
+        return str(startNum) + "->" + str(endNum)
+
+
+#DP (ADVANCED)
+#
+
+#You have a 2D binary matrix that's filled with 0s and 1s. In the matrix, find the largest square that contains only 1s and return its area.
+
+def maximalSquare(matrix):
+    
+    if len(matrix) == 0:
+        return 0
+    
+    mtx = [[int(item) for item in matrix[0]]]
+    
+    maxNum = max(mtx[0], key=lambda item: int(item))
+    
+    for i in range(1,len(matrix)):
+        num = int(matrix[i][0])
+        if num > maxNum:
+            maxNum = num
+        mtx.append([num])
+        for j in range(1,len(mtx[0])):
+            if matrix[i][j] == '0':
+                mtx[i].append(0)
+            elif matrix[i][j] == '1':
+                num = min(mtx[i-1][j-1], mtx[i][j-1], mtx[i-1][j]) + 1
+                mtx[i].append(num)
+                if num > maxNum:
+                    maxNum = num
+
+    return maxNum**2
 
 
 #STRINGS
@@ -860,6 +1362,52 @@ def singleNumber(nums):
     return res
 
 
+#Given an integer n, replace its bits starting from the bit at position a to the bit at position b, inclusive, 
+#with the bits of integer k. Count from the least significant bit to the most significant bit, starting from 0.
+
+def insertBits(n, a, b, k):
+    
+    binN = bin(n)[2:]
+    binK = bin(k)[2:]
+    
+    while len(binN) < (b+1):
+        binN = '0' + binN
+        
+    while len(binK) < (b-a+1):
+        binK = '0' + binK
+
+    if a != 0:
+        return int(binN[:-(b+1)] + binK + binN[-a:], 2)
+    return int(binN[:-(b+1)] + binK, 2)
+
+
+
+
+
+#COMMON TECHNIQUES (ADVANCED)
+#
+
+#All DNA is composed of a series of nucleotides abbreviated as A, C, G, and T. In research, it can be useful to identify repeated sequences within DNA.
+#Write a function to find all the 10-letter sequences (substrings) that occur more than once in a DNA molecule s, and return them in lexicographical order. These sequences can overlap.
+
+def repeatedDNASequences(s):
+    
+    if len(s) < 10:
+        return []
+    
+    tenLetterSequences = set()
+    TLS_appearMoreThanOnce = set()
+    
+    for i in range(0,len(s)-9):
+        tenLetrSeq = s[i:i+10]
+        if tenLetrSeq in tenLetterSequences:
+            TLS_appearMoreThanOnce.add(tenLetrSeq)
+        else:
+            tenLetterSequences.add(tenLetrSeq)
+            
+    return sorted(list(TLS_appearMoreThanOnce))
+
+
 #NUMBER THEORY
 #
 
@@ -878,3 +1426,51 @@ def missingNumber(arr):
         i += 1
     
     return list(x)[0]
+
+
+#A rational number is the ratio of two integers, where the denominator is not zero. We are going to represent the rational number numerator / denominator as the ordered pair (numerator, denominator).
+
+#There are many different tuples representing the same rational number. 
+#For instance, one-half is (1, 2), (2, 4), (3, 6), etc. 
+#Your task is to write a function that, given the numbers numerator and denominator representing the ratio numerator / denominator, returns an array [a, b] of two integers where:
+
+#(a, b) represents the same rational number as (numerator, denominator) but in simplified format;
+#a and b have no non-trivial factors;
+#b is positive.
+
+def simplifyRational(numerator, denominator):
+
+    # deal with negatives...
+    numNegatives = 0
+    if numerator < 0:
+        numNegatives += 1
+        numerator *= -1
+    if denominator < 0:
+        numNegatives += 1
+        denominator *= -1
+    
+    x = gcd(numerator, denominator)
+    
+    while x > 1:
+        numerator, denominator = numerator/x, denominator/x
+        x = gcd(numerator, denominator)
+
+    # bring negatives back if necessary...
+    if numNegatives % 2 == 1:
+        numerator *= -1
+        
+    return [numerator, denominator]
+
+
+def gcd(a, b):
+    while b:
+        a, b = b, a%b
+    return a
+
+
+#You're having a big party and you're serving a pizza as a main dish. You got really tired of cutting the pizza, so you decided to do it as efficiently as possible by using no more than n cuts.
+#Each cut is required to be a straight line, and there is no requirement that the pizza pieces be the same size.
+#Given n, the number of straight cuts you're willing to make, find the maximum number of pieces you can cut the pizza into.
+
+def lazyCutter(n):
+    return n*(n+1)/2 + 1
